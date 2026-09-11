@@ -1,0 +1,1152 @@
+{
+  "name": "final project",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "76c64412-3c01-4b5e-b6da-4ca3d594d33d",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        1952
+      ],
+      "webhookId": "7428445b-1361-4908-9567-84a6b0bca439"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "name",
+              "value": "={{ $json.body.name || $json.name || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f2",
+              "name": "email",
+              "value": "={{ ($json.body.email || $json.email || '').toLowerCase().trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "f3",
+              "name": "phone",
+              "value": "={{ $json.body.phone || $json.phone || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f4",
+              "name": "company",
+              "value": "={{ $json.body.company || $json.company || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f5",
+              "name": "industry",
+              "value": "={{ $json.body.industry || $json.industry || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f6",
+              "name": "employees",
+              "value": "={{ Number($json.body.employees || $json.employees || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "f7",
+              "name": "budget",
+              "value": "={{ Number($json.body.budget || $json.budget || 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "f8",
+              "name": "service",
+              "value": "={{ $json.body.service || $json.service || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f9",
+              "name": "message",
+              "value": "={{ $json.body.message || $json.message || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f10",
+              "name": "source",
+              "value": "website",
+              "type": "string"
+            },
+            {
+              "id": "f11",
+              "name": "status",
+              "value": "NEW",
+              "type": "string"
+            },
+            {
+              "id": "f12",
+              "name": "followup_count",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "f13",
+              "name": "created_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d9306585-2ea8-426a-9e91-3a6651ec2934",
+      "name": "Normalize Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "75452a4d-ec0e-451f-93e6-88285caa5ad0",
+      "name": "Validate Lead",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "r1",
+              "name": "rejected",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "r2",
+              "name": "rejection_reason",
+              "value": "Missing name or email",
+              "type": "string"
+            },
+            {
+              "id": "r3",
+              "name": "rejected_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "r4",
+              "name": "raw_name",
+              "value": "={{ $('Normalize Data').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "r5",
+              "name": "raw_email",
+              "value": "={{ $('Normalize Data').item.json.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "75184e32-f2f7-4477-af8b-d39b19bd1266",
+      "name": "Reject Invalid",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        528,
+        2160
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 713656283,
+          "mode": "list",
+          "cachedResultName": "CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=713656283"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "lead_id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0cdccb52-ba78-4e02-b132-96dd2ec4f98a",
+      "name": "Duplicate Check",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        624,
+        1952
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MUW0OdsUixXmEWc1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c3",
+              "leftValue": "={{ $json.lead_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f1defaf8-ce50-4684-ab9c-4d4dc6b0df3f",
+      "name": "Is Duplicate?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "skipped",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "s2",
+              "name": "skip_reason",
+              "value": "Duplicate lead - email already exists in CRM",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "existing_lead_id",
+              "value": "={{ $json.lead_id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "s4",
+              "name": "existing_name",
+              "value": "={{ $json.name || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "s5",
+              "name": "existing_email",
+              "value": "={{ $json.email || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "s6",
+              "name": "checked_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dd7638e4-ced2-40c8-9020-cfd7b5ff45a7",
+      "name": "Skip Duplicate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        1744
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "g1",
+              "name": "lead_id",
+              "value": "={{ 'LEAD-' + $now.toMillis() }}",
+              "type": "string"
+            },
+            {
+              "id": "g2",
+              "name": "name",
+              "value": "={{ $('Normalize Data').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "g3",
+              "name": "email",
+              "value": "={{ $('Normalize Data').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "g4",
+              "name": "phone",
+              "value": "={{ $('Normalize Data').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "g5",
+              "name": "company",
+              "value": "={{ $('Normalize Data').item.json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "g6",
+              "name": "industry",
+              "value": "={{ $('Normalize Data').item.json.industry }}",
+              "type": "string"
+            },
+            {
+              "id": "g7",
+              "name": "employees",
+              "value": "={{ $('Normalize Data').item.json.employees }}",
+              "type": "number"
+            },
+            {
+              "id": "g8",
+              "name": "budget",
+              "value": "={{ $('Normalize Data').item.json.budget }}",
+              "type": "number"
+            },
+            {
+              "id": "g9",
+              "name": "service",
+              "value": "={{ $('Normalize Data').item.json.service }}",
+              "type": "string"
+            },
+            {
+              "id": "g10",
+              "name": "message",
+              "value": "={{ $('Normalize Data').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "g11",
+              "name": "source",
+              "value": "={{ $('Normalize Data').item.json.source }}",
+              "type": "string"
+            },
+            {
+              "id": "g12",
+              "name": "status",
+              "value": "NEW",
+              "type": "string"
+            },
+            {
+              "id": "g13",
+              "name": "followup_count",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "g14",
+              "name": "created_at",
+              "value": "={{ $('Normalize Data').item.json.created_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "541d43e5-33db-4a02-b7f1-3ddcd5618455",
+      "name": "Generate Lead ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1072,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://aistudio.google.com/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": {{ JSON.stringify(\"You are a B2B lead scoring assistant. Analyze the lead and return ONLY a JSON object with keys: score (number 0-100), category (HOT/WARM/COLD), reason, priority (HIGH/NORMAL/LOW), recommended_action.\\n\\nLead:\\nName: \" + $json.name + \"\\nCompany: \" + $json.company + \"\\nIndustry: \" + $json.industry + \"\\nEmployees: \" + $json.employees + \"\\nBudget: \" + $json.budget + \"\\nService: \" + $json.service + \"\\nMessage: \" + $json.message) }}\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": { \"response_mime_type\": \"application/json\" }\n}",
+        "options": {}
+      },
+      "id": "69f6daaa-17e7-480f-b335-a979e62c5138",
+      "name": "AI Scoring (Gemini)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1296,
+        1888
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "X6tQdCEitucc9K9U",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "h1",
+              "name": "lead_id",
+              "value": "={{ $('Generate Lead ID').item.json.lead_id }}",
+              "type": "string"
+            },
+            {
+              "id": "h2",
+              "name": "name",
+              "value": "={{ $('Generate Lead ID').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "h3",
+              "name": "email",
+              "value": "={{ $('Generate Lead ID').item.json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "h4",
+              "name": "phone",
+              "value": "={{ $('Generate Lead ID').item.json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "h5",
+              "name": "company",
+              "value": "={{ $('Generate Lead ID').item.json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "h6",
+              "name": "industry",
+              "value": "={{ $('Generate Lead ID').item.json.industry }}",
+              "type": "string"
+            },
+            {
+              "id": "h7",
+              "name": "employees",
+              "value": "={{ $('Generate Lead ID').item.json.employees }}",
+              "type": "number"
+            },
+            {
+              "id": "h8",
+              "name": "budget",
+              "value": "={{ $('Generate Lead ID').item.json.budget }}",
+              "type": "number"
+            },
+            {
+              "id": "h9",
+              "name": "service",
+              "value": "={{ $('Generate Lead ID').item.json.service }}",
+              "type": "string"
+            },
+            {
+              "id": "h10",
+              "name": "message",
+              "value": "={{ $('Generate Lead ID').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "h11",
+              "name": "source",
+              "value": "={{ $('Generate Lead ID').item.json.source }}",
+              "type": "string"
+            },
+            {
+              "id": "h12",
+              "name": "created_at",
+              "value": "={{ $('Generate Lead ID').item.json.created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "h13",
+              "name": "ai_score",
+              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).score || 50 }}",
+              "type": "number"
+            },
+            {
+              "id": "h14",
+              "name": "ai_reason",
+              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).reason || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "h15",
+              "name": "ai_priority",
+              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).priority || 'NORMAL' }}",
+              "type": "string"
+            },
+            {
+              "id": "h16",
+              "name": "ai_action",
+              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).recommended_action || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "h17",
+              "name": "rule_score",
+              "value": "={{ ($('Generate Lead ID').item.json.budget >= 5000 ? 30 : $('Generate Lead ID').item.json.budget >= 2000 ? 25 : $('Generate Lead ID').item.json.budget >= 500 ? 15 : 5) + ($('Generate Lead ID').item.json.employees > 200 ? 20 : $('Generate Lead ID').item.json.employees >= 51 ? 15 : $('Generate Lead ID').item.json.employees >= 11 ? 10 : 5) + (/buy|start|now|immediately|ready/i.test($('Generate Lead ID').item.json.message || '') ? 30 : /need|want|implement|automate/i.test($('Generate Lead ID').item.json.message || '') ? 20 : /interested/i.test($('Generate Lead ID').item.json.message || '') ? 10 : 5) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bd3dad01-ec6c-45d1-bfed-8ed44af7a52f",
+      "name": "Hybrid Score",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1520,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "x1",
+              "name": "final_score",
+              "value": "={{ Math.round($json.rule_score * 0.6 + $json.ai_score * 0.4) }}",
+              "type": "number"
+            },
+            {
+              "id": "x2",
+              "name": "category",
+              "value": "={{ Math.round($json.rule_score * 0.6 + $json.ai_score * 0.4) >= 80 ? 'HOT' : Math.round($json.rule_score * 0.6 + $json.ai_score * 0.4) >= 50 ? 'WARM' : 'COLD' }}",
+              "type": "string"
+            },
+            {
+              "id": "x3",
+              "name": "reason",
+              "value": "={{ $json.ai_reason }}",
+              "type": "string"
+            },
+            {
+              "id": "x4",
+              "name": "priority",
+              "value": "={{ $json.ai_priority }}",
+              "type": "string"
+            },
+            {
+              "id": "x5",
+              "name": "recommended_action",
+              "value": "={{ $json.ai_action }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "49b11471-eb4e-4b4f-9b9c-81b1684b46c8",
+      "name": "Final Score",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1744,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "s1",
+                    "leftValue": "={{ $json.final_score }}",
+                    "rightValue": 80,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "HOT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "s2",
+                    "leftValue": "={{ $json.final_score }}",
+                    "rightValue": 50,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "WARM"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "COLD"
+        }
+      },
+      "id": "9b4da7fd-5242-4dd3-9995-03f325f33c5e",
+      "name": "Classify",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1968,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 713656283,
+          "mode": "list",
+          "cachedResultName": "CRM",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=713656283"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lead_id": "={{ $('Hybrid Score').item.json.lead_id }}",
+            "name": "={{ $('Hybrid Score').item.json.name }}",
+            "email": "={{ $('Hybrid Score').item.json.email }}",
+            "phone": "={{ $('Hybrid Score').item.json.phone }}",
+            "company": "={{ $('Hybrid Score').item.json.company }}",
+            "budget": "={{ $('Hybrid Score').item.json.budget }}",
+            "service": "={{ $('Hybrid Score').item.json.service }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "industry",
+              "displayName": "industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "employees",
+              "displayName": "employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "budget",
+              "displayName": "budget",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rule_score",
+              "displayName": "rule_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_score",
+              "displayName": "ai_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_contact",
+              "displayName": "last_contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_followup",
+              "displayName": "next_followup",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "followup_count",
+              "displayName": "followup_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "986573e2-0d06-4efe-9df1-f48e744a680d",
+      "name": "Save to CRM",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2192,
+        1888
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MUW0OdsUixXmEWc1",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Thank you for your interest, {{ $json.name }}",
+        "emailType": "text",
+        "message": "=Hello {{ $json.name }}\nThank you for contacting us.\n\nWe received your request regarding for\nOur team will review your requirements and contact you shortly.\n\nBest regards,\nSales Team",
+        "options": {}
+      },
+      "id": "8c29aa6d-2b57-4706-8c51-e9f92a1f2687",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2416,
+        1888
+      ],
+      "webhookId": "31446123-a6bc-4512-ba71-3583ca03a59c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RqGNOUpgg5iC9vQA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"received\" }",
+        "options": {}
+      },
+      "id": "bd8374af-d2f7-4031-b8d4-ca5b7adc62c5",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        1888
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Data": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Lead": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate Check": {
+      "main": [
+        [
+          {
+            "node": "Is Duplicate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Duplicate?": {
+      "main": [
+        [
+          {
+            "node": "Skip Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate Lead ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Lead ID": {
+      "main": [
+        [
+          {
+            "node": "AI Scoring (Gemini)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Scoring (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Hybrid Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hybrid Score": {
+      "main": [
+        [
+          {
+            "node": "Final Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Score": {
+      "main": [
+        [
+          {
+            "node": "Classify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify": {
+      "main": [
+        [
+          {
+            "node": "Save to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to CRM": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8402be25-a314-45b2-aafa-53c71ccd898e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7cb4c493d61520b02dadb775069ff1a7851f920223e835f3e51f2d42d1086034"
+  },
+  "nodeGroups": [],
+  "id": "XTmewexTzgFRczk9",
+  "tags": []
+}
