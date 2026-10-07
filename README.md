@@ -56,8 +56,8 @@ Webhook (new lead)
 
 ## Setup
 
-1. Import `workflow.json` into your n8n instance (**Workflows → Import from
-   File**).
+1. Import `lead management.json` into your n8n instance (**Workflows → Import
+   from File**).
 2. Connect your own credentials for each service used in the workflow:
    - Google Sheets OAuth2 (for the CRM sheet)
    - Gmail OAuth2 (for notifications)
