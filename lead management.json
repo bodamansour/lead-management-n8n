@@ -1,101 +1,189 @@
 {
-  "name": "final project",
+  "name": "AI Lead Scoring (v2)",
   "nodes": [
     {
       "parameters": {
+        "content": "## AI Lead Scoring (v2)\n1. Fill in the **Config** node (company, team email, criteria, thresholds).\n2. Connect credentials: Google Sheets, Gmail, and a **Header Auth** credential named `x-goog-api-key` for Gemini.\n3. Put your sheet ID in **Duplicate Check** and **Save to CRM**.\n4. Publish, then send a test lead to the webhook.",
+        "height": 220,
+        "width": 520,
+        "color": 7
+      },
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -40
+      ],
+      "id": "f360cfa6-f460-48f3-bc46-c895bfcb8cf8"
+    },
+    {
+      "parameters": {
         "httpMethod": "POST",
-        "path": "new-lead",
+        "path": "lead-scoring",
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "76c64412-3c01-4b5e-b6da-4ca3d594d33d",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -112,
-        1952
+        0,
+        300
       ],
-      "webhookId": "7428445b-1361-4908-9567-84a6b0bca439"
+      "id": "6dac892a-b0dc-4fff-9f49-8f4f520cde66",
+      "webhookId": "661e1d70-e8ee-4f63-9383-7572a1e01dbf"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "f1",
+              "id": "9eefccce-2be3-4911-9fce-1e4b2c14fa78",
+              "name": "company_name",
+              "value": "Your Company",
+              "type": "string"
+            },
+            {
+              "id": "eedd44f7-9718-4274-8f5b-94e959a88f54",
+              "name": "team_email",
+              "value": "team@example.com",
+              "type": "string"
+            },
+            {
+              "id": "1e430709-45f3-4e5a-b907-27bbeca8821b",
+              "name": "scoring_criteria",
+              "value": "Clear need for our service; budget that fits our pricing; ready to start soon; company size that fits our typical clients",
+              "type": "string"
+            },
+            {
+              "id": "e58344e5-74d6-4068-a2f5-eb0ec868de7f",
+              "name": "hot_threshold",
+              "value": 80,
+              "type": "number"
+            },
+            {
+              "id": "485c3adf-e4c3-42b3-a1de-f4243d2b32e0",
+              "name": "warm_threshold",
+              "value": 50,
+              "type": "number"
+            },
+            {
+              "id": "e7ea1837-7eec-4bf9-9af0-cc38d4b39eb1",
+              "name": "rule_weight",
+              "value": 0.6,
+              "type": "number"
+            },
+            {
+              "id": "3520615e-d036-40c2-87f8-c7606fa51b2f",
+              "name": "ai_weight",
+              "value": 0.4,
+              "type": "number"
+            },
+            {
+              "id": "8e3fad95-0936-4527-bd11-e40bbb60763a",
+              "name": "gemini_model",
+              "value": "gemini-3.5-flash-lite",
+              "type": "string"
+            },
+            {
+              "id": "ec43f081-a992-4796-9dd3-b603eccdee2d",
+              "name": "gemini_api_base",
+              "value": "https://generativelanguage.googleapis.com/v1beta",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {},
+        "includeOtherFields": true
+      },
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        300
+      ],
+      "id": "3da14a0c-a87f-44eb-9edb-cda0c51936da"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e4517b9e-639d-43d8-bfa5-d9ceb6ddc6c9",
               "name": "name",
-              "value": "={{ $json.body.name || $json.name || '' }}",
+              "value": "={{ ($json.body.name || $json.name || '').toString().trim() }}",
               "type": "string"
             },
             {
-              "id": "f2",
+              "id": "aa476f79-6a2c-428d-9d7c-0d3b672e42db",
               "name": "email",
-              "value": "={{ ($json.body.email || $json.email || '').toLowerCase().trim() }}",
+              "value": "={{ ($json.body.email || $json.email || '').toString().toLowerCase().trim() }}",
               "type": "string"
             },
             {
-              "id": "f3",
+              "id": "adfdd441-9198-4f49-85cb-c98fb24078f9",
               "name": "phone",
-              "value": "={{ $json.body.phone || $json.phone || '' }}",
+              "value": "={{ ($json.body.phone || $json.phone || '').toString().trim() }}",
               "type": "string"
             },
             {
-              "id": "f4",
+              "id": "2a2c5845-0dee-4485-abd4-387ea7bdfe90",
               "name": "company",
-              "value": "={{ $json.body.company || $json.company || '' }}",
+              "value": "={{ ($json.body.company || $json.company || '').toString().trim() }}",
               "type": "string"
             },
             {
-              "id": "f5",
+              "id": "82a79ac1-f220-4366-bcd1-492ec751eb69",
               "name": "industry",
-              "value": "={{ $json.body.industry || $json.industry || '' }}",
+              "value": "={{ ($json.body.industry || $json.industry || '').toString().trim() }}",
               "type": "string"
             },
             {
-              "id": "f6",
+              "id": "be601c78-5b0c-471f-b1cb-9622a6d99563",
               "name": "employees",
-              "value": "={{ Number($json.body.employees || $json.employees || 0) }}",
+              "value": "={{ Number(String($json.body.employees || $json.employees || '').split(',').join('').match(/\\d+(\\.\\d+)?/)?.[0] || 0) }}",
               "type": "number"
             },
             {
-              "id": "f7",
+              "id": "2c57ad93-0b57-4059-bd2f-8b972a7e8836",
               "name": "budget",
-              "value": "={{ Number($json.body.budget || $json.budget || 0) }}",
+              "value": "={{ Number(String($json.body.budget || $json.budget || '').split(',').join('').match(/\\d+(\\.\\d+)?/)?.[0] || 0) }}",
               "type": "number"
             },
             {
-              "id": "f8",
+              "id": "20b39c11-c51b-43de-b85e-81f23f5655a8",
               "name": "service",
-              "value": "={{ $json.body.service || $json.service || '' }}",
+              "value": "={{ ($json.body.service || $json.service || '').toString().trim() }}",
               "type": "string"
             },
             {
-              "id": "f9",
+              "id": "fc972bdd-e0b3-4955-b9b9-709b1131eff1",
               "name": "message",
-              "value": "={{ $json.body.message || $json.message || '' }}",
+              "value": "={{ ($json.body.message || $json.message || '').toString().trim() }}",
               "type": "string"
             },
             {
-              "id": "f10",
+              "id": "714092b0-b661-432d-bb75-8883fdae6672",
               "name": "source",
-              "value": "website",
+              "value": "={{ $json.body.source || $json.source || 'website' }}",
               "type": "string"
             },
             {
-              "id": "f11",
+              "id": "ff7c0604-bd18-478f-ac55-0b4fb26f85e3",
               "name": "status",
               "value": "NEW",
               "type": "string"
             },
             {
-              "id": "f12",
+              "id": "bafda567-8638-4437-94f3-c6516ba9ba26",
               "name": "followup_count",
               "value": 0,
               "type": "number"
             },
             {
-              "id": "f13",
+              "id": "349dd026-9289-4755-969d-bd263bea0d9c",
               "name": "created_at",
               "value": "={{ $now.toISO() }}",
               "type": "string"
@@ -104,14 +192,14 @@
         },
         "options": {}
       },
-      "id": "d9306585-2ea8-426a-9e91-3a6651ec2934",
       "name": "Normalize Data",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        176,
-        1952
-      ]
+        480,
+        300
+      ],
+      "id": "ac438bb7-d3ff-4a7b-b89d-c36a7efeba6e"
     },
     {
       "parameters": {
@@ -124,17 +212,7 @@
           },
           "conditions": [
             {
-              "id": "c1",
-              "leftValue": "={{ $json.email }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty",
-                "singleValue": true
-              }
-            },
-            {
-              "id": "c2",
+              "id": "ac0ae852-e52f-4e80-a38e-aac73768d17d",
               "leftValue": "={{ $json.name }}",
               "rightValue": "",
               "operator": {
@@ -142,108 +220,113 @@
                 "operation": "notEmpty",
                 "singleValue": true
               }
+            },
+            {
+              "id": "1f3eb22f-2e3d-40db-90ec-fead0b6970be",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
             }
           ],
           "combinator": "and"
         },
         "options": {}
       },
-      "id": "75452a4d-ec0e-451f-93e6-88285caa5ad0",
       "name": "Validate Lead",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        400,
-        1952
-      ]
+        720,
+        300
+      ],
+      "id": "af04ede8-4ad2-4a1e-a50d-a47b42fe0f7b"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "r1",
+              "id": "a6229bc3-de10-4973-9de0-650f7e581ffb",
               "name": "rejected",
               "value": true,
               "type": "boolean"
             },
             {
-              "id": "r2",
+              "id": "a172462f-6a47-4680-85fc-8a347254435a",
               "name": "rejection_reason",
-              "value": "Missing name or email",
+              "value": "Missing name or a valid email",
               "type": "string"
             },
             {
-              "id": "r3",
+              "id": "5989a83f-0bc8-443c-a713-9dded3321728",
               "name": "rejected_at",
               "value": "={{ $now.toISO() }}",
-              "type": "string"
-            },
-            {
-              "id": "r4",
-              "name": "raw_name",
-              "value": "={{ $('Normalize Data').item.json.name }}",
-              "type": "string"
-            },
-            {
-              "id": "r5",
-              "name": "raw_email",
-              "value": "={{ $('Normalize Data').item.json.email }}",
               "type": "string"
             }
           ]
         },
         "options": {}
       },
-      "id": "75184e32-f2f7-4477-af8b-d39b19bd1266",
       "name": "Reject Invalid",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        528,
-        2160
-      ]
+        960,
+        560
+      ],
+      "id": "d6c3e3bf-489c-4fa9-aac9-12d5b8517baa"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"rejected\",\n  \"reason\": \"{{ $json.rejection_reason }}\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "name": "Respond: Invalid",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        560
+      ],
+      "id": "7da6ac06-0508-474a-b29e-655fbbf9d0bc"
     },
     {
       "parameters": {
         "documentId": {
           "__rl": true,
           "value": "YOUR_GOOGLE_SHEET_ID",
-          "mode": "list",
-          "cachedResultName": "CRM",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+          "mode": "id"
         },
         "sheetName": {
           "__rl": true,
-          "value": 713656283,
-          "mode": "list",
-          "cachedResultName": "CRM",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=713656283"
+          "value": "CRM",
+          "mode": "name"
         },
         "filtersUI": {
           "values": [
             {
-              "lookupColumn": "lead_id"
+              "lookupColumn": "email",
+              "lookupValue": "={{ $json.email }}"
             }
           ]
         },
         "options": {}
       },
-      "id": "0cdccb52-ba78-4e02-b132-96dd2ec4f98a",
       "name": "Duplicate Check",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        624,
-        1952
+        960,
+        300
       ],
-      "alwaysOutputData": true,
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "MUW0OdsUixXmEWc1",
-          "name": "Google Sheets account"
-        }
-      }
+      "id": "0646a3db-a60e-48ab-a60a-46fcf51c1706",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -256,7 +339,7 @@
           },
           "conditions": [
             {
-              "id": "c3",
+              "id": "6767a275-f658-4cba-9999-6d43c006dd7e",
               "leftValue": "={{ $json.lead_id }}",
               "rightValue": "",
               "operator": {
@@ -270,51 +353,40 @@
         },
         "options": {}
       },
-      "id": "f1defaf8-ce50-4684-ab9c-4d4dc6b0df3f",
       "name": "Is Duplicate?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        848,
-        1952
-      ]
+        1200,
+        300
+      ],
+      "id": "22887cc8-8f69-4bfe-a5d0-37fb6d9bc4c9",
+      "executeOnce": true
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "s1",
+              "id": "ccfb9a0d-6784-4458-92bd-ef2b5d66ac75",
               "name": "skipped",
               "value": true,
               "type": "boolean"
             },
             {
-              "id": "s2",
+              "id": "5306ec65-e403-41c5-b4b0-cbd28f55d0b2",
               "name": "skip_reason",
               "value": "Duplicate lead - email already exists in CRM",
               "type": "string"
             },
             {
-              "id": "s3",
+              "id": "27821b5a-ca21-4611-ace7-76dab47111b6",
               "name": "existing_lead_id",
               "value": "={{ $json.lead_id || '' }}",
               "type": "string"
             },
             {
-              "id": "s4",
-              "name": "existing_name",
-              "value": "={{ $json.name || '' }}",
-              "type": "string"
-            },
-            {
-              "id": "s5",
-              "name": "existing_email",
-              "value": "={{ $json.email || '' }}",
-              "type": "string"
-            },
-            {
-              "id": "s6",
+              "id": "d6123f66-e0fe-42fe-9691-6045182df119",
               "name": "checked_at",
               "value": "={{ $now.toISO() }}",
               "type": "string"
@@ -323,307 +395,361 @@
         },
         "options": {}
       },
-      "id": "dd7638e4-ced2-40c8-9020-cfd7b5ff45a7",
       "name": "Skip Duplicate",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1072,
-        1744
-      ]
+        1440,
+        40
+      ],
+      "id": "29d61fc2-789e-469d-925b-4c7fd00d17ee"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"duplicate\",\n  \"existing_lead_id\": \"{{ $json.existing_lead_id }}\"\n}",
+        "options": {}
+      },
+      "name": "Respond: Duplicate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        40
+      ],
+      "id": "a3fb74d5-5284-4910-b86e-ac9452f7e44b"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "g1",
+              "id": "e8a3d327-a081-4e02-bdda-46ee2261e5f1",
               "name": "lead_id",
               "value": "={{ 'LEAD-' + $now.toMillis() }}",
               "type": "string"
             },
             {
-              "id": "g2",
+              "id": "0ec0fdb7-f36c-4673-8154-e8b8663ad145",
               "name": "name",
-              "value": "={{ $('Normalize Data').item.json.name }}",
+              "value": "={{ $('Normalize Data').first().json.name }}",
               "type": "string"
             },
             {
-              "id": "g3",
+              "id": "f480a0fb-7076-4dda-bf0e-c8f2eb1a2e4f",
               "name": "email",
-              "value": "={{ $('Normalize Data').item.json.email }}",
+              "value": "={{ $('Normalize Data').first().json.email }}",
               "type": "string"
             },
             {
-              "id": "g4",
+              "id": "bc575881-3448-4c7e-b83e-3ea63a09c5b0",
               "name": "phone",
-              "value": "={{ $('Normalize Data').item.json.phone }}",
+              "value": "={{ $('Normalize Data').first().json.phone }}",
               "type": "string"
             },
             {
-              "id": "g5",
+              "id": "74c876d2-c674-4a40-9bf6-9b292daf3f0c",
               "name": "company",
-              "value": "={{ $('Normalize Data').item.json.company }}",
+              "value": "={{ $('Normalize Data').first().json.company }}",
               "type": "string"
             },
             {
-              "id": "g6",
+              "id": "88578f07-fff8-4c47-a084-f90a0b86ceef",
               "name": "industry",
-              "value": "={{ $('Normalize Data').item.json.industry }}",
+              "value": "={{ $('Normalize Data').first().json.industry }}",
               "type": "string"
             },
             {
-              "id": "g7",
+              "id": "ca1538f4-972c-404b-a940-f4967191e0ee",
               "name": "employees",
-              "value": "={{ $('Normalize Data').item.json.employees }}",
+              "value": "={{ $('Normalize Data').first().json.employees }}",
               "type": "number"
             },
             {
-              "id": "g8",
+              "id": "a8a2607b-785a-489f-b400-5f58fdc56429",
               "name": "budget",
-              "value": "={{ $('Normalize Data').item.json.budget }}",
+              "value": "={{ $('Normalize Data').first().json.budget }}",
               "type": "number"
             },
             {
-              "id": "g9",
+              "id": "fe454607-1995-4fe0-aa37-d08b8e40d533",
               "name": "service",
-              "value": "={{ $('Normalize Data').item.json.service }}",
+              "value": "={{ $('Normalize Data').first().json.service }}",
               "type": "string"
             },
             {
-              "id": "g10",
+              "id": "227cdfa7-00a2-4d01-8498-6596836a603b",
               "name": "message",
-              "value": "={{ $('Normalize Data').item.json.message }}",
+              "value": "={{ $('Normalize Data').first().json.message }}",
               "type": "string"
             },
             {
-              "id": "g11",
+              "id": "6f48bd3c-6d09-4430-ae64-6cd942c63275",
               "name": "source",
-              "value": "={{ $('Normalize Data').item.json.source }}",
+              "value": "={{ $('Normalize Data').first().json.source }}",
               "type": "string"
             },
             {
-              "id": "g12",
+              "id": "c68abcd3-0cee-46e4-80f8-ebb5e43330cc",
               "name": "status",
-              "value": "NEW",
+              "value": "={{ $('Normalize Data').first().json.status }}",
               "type": "string"
             },
             {
-              "id": "g13",
+              "id": "70f4dd06-ae32-4b99-af5e-a23b328fc1b3",
               "name": "followup_count",
-              "value": 0,
+              "value": "={{ $('Normalize Data').first().json.followup_count }}",
               "type": "number"
             },
             {
-              "id": "g14",
+              "id": "3d7e3a6f-59db-4a36-baa1-cf2fa01257af",
               "name": "created_at",
-              "value": "={{ $('Normalize Data').item.json.created_at }}",
+              "value": "={{ $('Normalize Data').first().json.created_at }}",
               "type": "string"
             }
           ]
         },
         "options": {}
       },
-      "id": "541d43e5-33db-4a02-b7f1-3ddcd5618455",
       "name": "Generate Lead ID",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1072,
-        1888
-      ]
+        1440,
+        300
+      ],
+      "id": "cf612585-dab8-4a8e-b92a-a61091283f05"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "https://aistudio.google.com/",
+        "url": "={{ $('Config').first().json.gemini_api_base }}/models/{{ $('Config').first().json.gemini_model }}:generateContent",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpBearerAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": {{ JSON.stringify(\"You are a B2B lead scoring assistant. Analyze the lead and return ONLY a JSON object with keys: score (number 0-100), category (HOT/WARM/COLD), reason, priority (HIGH/NORMAL/LOW), recommended_action.\\n\\nLead:\\nName: \" + $json.name + \"\\nCompany: \" + $json.company + \"\\nIndustry: \" + $json.industry + \"\\nEmployees: \" + $json.employees + \"\\nBudget: \" + $json.budget + \"\\nService: \" + $json.service + \"\\nMessage: \" + $json.message) }}\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": { \"response_mime_type\": \"application/json\" }\n}",
-        "options": {}
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": {{ JSON.stringify(\"You are a B2B lead scoring assistant for \" + $('Config').first().json.company_name + \". Score how likely this lead is to become a paying customer.\\n\\nScoring criteria: \" + $('Config').first().json.scoring_criteria + \"\\n\\nReturn ONLY a JSON object with these keys: score (number 0-100), category (HOT, WARM or COLD), reason (one short sentence), priority (HIGH, NORMAL or LOW), recommended_action (one short sentence).\\n\\nLead:\\nCompany: \" + $json.company + \"\\nIndustry: \" + $json.industry + \"\\nEmployees: \" + $json.employees + \"\\nBudget: \" + $json.budget + \"\\nService: \" + $json.service + \"\\nMessage: \" + $json.message) }}\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseMimeType\": \"application/json\",\n    \"temperature\": 0.2\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
       },
-      "id": "69f6daaa-17e7-480f-b335-a979e62c5138",
       "name": "AI Scoring (Gemini)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
       "position": [
-        1296,
-        1888
+        1680,
+        300
       ],
-      "credentials": {
-        "httpBearerAuth": {
-          "id": "X6tQdCEitucc9K9U",
-          "name": "Unnamed credential"
-        }
-      }
+      "id": "cf793ad6-7742-43a9-a3c3-784df58e2282",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Reads Gemini's answer safely.\n// If the AI call failed or returned something unreadable, ai_ok is false\n// and the lead is scored with the business rules only (see Final Score).\nconst res = $input.item.json;\nlet ai = null;\ntry {\n  const text = res.candidates[0].content.parts[0].text;\n  ai = JSON.parse(String(text).replace(/^```(?:json)?\\s*|\\s*```$/g, ''));\n} catch (e) {\n  ai = null;\n}\nconst score = Number(ai && ai.score);\nconst ok = ai !== null && Number.isFinite(score);\n\nreturn {\n  json: {\n    ai_ok: ok,\n    ai_score: ok ? Math.max(0, Math.min(100, Math.round(score))) : null,\n    ai_reason: ok ? String(ai.reason || '') : 'AI unavailable, scored with business rules only',\n    ai_priority: ok ? String(ai.priority || 'NORMAL').toUpperCase() : 'NORMAL',\n    ai_action: ok ? String(ai.recommended_action || '') : 'Review this lead manually',\n  },\n};\n"
+      },
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        300
+      ],
+      "id": "ca9e8386-1a24-443b-a870-55a458ca4612"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "h1",
+              "id": "82eb7772-3a96-4a0f-bf5c-a98edbf72cdf",
               "name": "lead_id",
-              "value": "={{ $('Generate Lead ID').item.json.lead_id }}",
+              "value": "={{ $('Generate Lead ID').first().json.lead_id }}",
               "type": "string"
             },
             {
-              "id": "h2",
+              "id": "0d251a95-7e44-4b8a-b3b9-5e5a5f01a36f",
               "name": "name",
-              "value": "={{ $('Generate Lead ID').item.json.name }}",
+              "value": "={{ $('Generate Lead ID').first().json.name }}",
               "type": "string"
             },
             {
-              "id": "h3",
+              "id": "cbca0cd2-afa8-4843-8c88-90b2da912913",
               "name": "email",
-              "value": "={{ $('Generate Lead ID').item.json.email }}",
+              "value": "={{ $('Generate Lead ID').first().json.email }}",
               "type": "string"
             },
             {
-              "id": "h4",
+              "id": "8d410cef-d215-4ba5-9145-ce507a8eb30b",
               "name": "phone",
-              "value": "={{ $('Generate Lead ID').item.json.phone }}",
+              "value": "={{ $('Generate Lead ID').first().json.phone }}",
               "type": "string"
             },
             {
-              "id": "h5",
+              "id": "66962085-5d86-4bcf-a3c4-aad2859816bf",
               "name": "company",
-              "value": "={{ $('Generate Lead ID').item.json.company }}",
+              "value": "={{ $('Generate Lead ID').first().json.company }}",
               "type": "string"
             },
             {
-              "id": "h6",
+              "id": "2401580d-1daa-4e37-8aa7-ea48ee143668",
               "name": "industry",
-              "value": "={{ $('Generate Lead ID').item.json.industry }}",
+              "value": "={{ $('Generate Lead ID').first().json.industry }}",
               "type": "string"
             },
             {
-              "id": "h7",
+              "id": "58f5e67a-0f62-4b27-99d2-3959fe626047",
               "name": "employees",
-              "value": "={{ $('Generate Lead ID').item.json.employees }}",
+              "value": "={{ $('Generate Lead ID').first().json.employees }}",
               "type": "number"
             },
             {
-              "id": "h8",
+              "id": "5741ab2f-7d3e-4cea-8c13-9cc07a914b97",
               "name": "budget",
-              "value": "={{ $('Generate Lead ID').item.json.budget }}",
+              "value": "={{ $('Generate Lead ID').first().json.budget }}",
               "type": "number"
             },
             {
-              "id": "h9",
+              "id": "8bce60c6-8ff8-49e4-a271-bbe9514de9af",
               "name": "service",
-              "value": "={{ $('Generate Lead ID').item.json.service }}",
+              "value": "={{ $('Generate Lead ID').first().json.service }}",
               "type": "string"
             },
             {
-              "id": "h10",
+              "id": "6e974788-640b-407e-a0f4-c4b7df58d78f",
               "name": "message",
-              "value": "={{ $('Generate Lead ID').item.json.message }}",
+              "value": "={{ $('Generate Lead ID').first().json.message }}",
               "type": "string"
             },
             {
-              "id": "h11",
+              "id": "9404c62d-5287-49a9-a79c-76ea441f99fe",
               "name": "source",
-              "value": "={{ $('Generate Lead ID').item.json.source }}",
+              "value": "={{ $('Generate Lead ID').first().json.source }}",
               "type": "string"
             },
             {
-              "id": "h12",
-              "name": "created_at",
-              "value": "={{ $('Generate Lead ID').item.json.created_at }}",
+              "id": "1859f55d-8cb5-4dde-aded-fbd600c4693b",
+              "name": "status",
+              "value": "={{ $('Generate Lead ID').first().json.status }}",
               "type": "string"
             },
             {
-              "id": "h13",
-              "name": "ai_score",
-              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).score || 50 }}",
+              "id": "fe82940f-ceb4-4198-9b4c-aa66df987074",
+              "name": "followup_count",
+              "value": "={{ $('Generate Lead ID').first().json.followup_count }}",
               "type": "number"
             },
             {
-              "id": "h14",
+              "id": "e71c3d2c-04b1-4258-a056-61cb13447cf3",
+              "name": "created_at",
+              "value": "={{ $('Generate Lead ID').first().json.created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "10d61cc6-6b4c-40c0-9092-38183f32d433",
+              "name": "ai_ok",
+              "value": "={{ $json.ai_ok }}",
+              "type": "boolean"
+            },
+            {
+              "id": "aae9e330-12f2-4d4c-8ad7-bbbeb449ee2d",
+              "name": "ai_score",
+              "value": "={{ $json.ai_score }}",
+              "type": "number"
+            },
+            {
+              "id": "1e8e70e9-aa1a-446b-9e5b-aa48cecb72cc",
               "name": "ai_reason",
-              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).reason || '' }}",
+              "value": "={{ $json.ai_reason }}",
               "type": "string"
             },
             {
-              "id": "h15",
+              "id": "aca1e8cd-04c3-4131-918b-dd35dcf84a1b",
               "name": "ai_priority",
-              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).priority || 'NORMAL' }}",
+              "value": "={{ $json.ai_priority }}",
               "type": "string"
             },
             {
-              "id": "h16",
+              "id": "1187b1eb-0362-4aeb-8468-942c5d1c02ea",
               "name": "ai_action",
-              "value": "={{ JSON.parse($json.candidates[0].content.parts[0].text).recommended_action || '' }}",
+              "value": "={{ $json.ai_action }}",
               "type": "string"
             },
             {
-              "id": "h17",
+              "id": "f72e2205-87a6-4336-bc93-5f85addc1559",
               "name": "rule_score",
-              "value": "={{ ($('Generate Lead ID').item.json.budget >= 5000 ? 30 : $('Generate Lead ID').item.json.budget >= 2000 ? 25 : $('Generate Lead ID').item.json.budget >= 500 ? 15 : 5) + ($('Generate Lead ID').item.json.employees > 200 ? 20 : $('Generate Lead ID').item.json.employees >= 51 ? 15 : $('Generate Lead ID').item.json.employees >= 11 ? 10 : 5) + (/buy|start|now|immediately|ready/i.test($('Generate Lead ID').item.json.message || '') ? 30 : /need|want|implement|automate/i.test($('Generate Lead ID').item.json.message || '') ? 20 : /interested/i.test($('Generate Lead ID').item.json.message || '') ? 10 : 5) }}",
+              "value": "={{ Math.round((($('Generate Lead ID').first().json.budget >= 5000 ? 30 : $('Generate Lead ID').first().json.budget >= 2000 ? 25 : $('Generate Lead ID').first().json.budget >= 500 ? 15 : 5) + ($('Generate Lead ID').first().json.employees > 200 ? 20 : $('Generate Lead ID').first().json.employees >= 51 ? 15 : $('Generate Lead ID').first().json.employees >= 11 ? 10 : 5) + (/\\b(buy|start|now|immediately|ready|asap)\\b/i.test(($('Generate Lead ID').first().json.message || '')) ? 30 : /\\b(need|want|implement|automat)/i.test(($('Generate Lead ID').first().json.message || '')) ? 20 : /\\binterested\\b/i.test(($('Generate Lead ID').first().json.message || '')) ? 10 : 5)) / 80 * 100) }}",
               "type": "number"
             }
           ]
         },
         "options": {}
       },
-      "id": "bd3dad01-ec6c-45d1-bfed-8ed44af7a52f",
       "name": "Hybrid Score",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1520,
-        1888
-      ]
+        2160,
+        300
+      ],
+      "id": "3934c3f9-277f-4cfd-8cbd-c2181ddc219c"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "x1",
+              "id": "6ba00586-7ee4-42e7-b59e-81c902a82eea",
               "name": "final_score",
-              "value": "={{ Math.round($json.rule_score * 0.6 + $json.ai_score * 0.4) }}",
+              "value": "={{ ($json.ai_ok ? Math.round($json.rule_score * $('Config').first().json.rule_weight + $json.ai_score * $('Config').first().json.ai_weight) : $json.rule_score) }}",
               "type": "number"
             },
             {
-              "id": "x2",
+              "id": "fd164674-9f6b-491e-b082-29ba8e340577",
               "name": "category",
-              "value": "={{ Math.round($json.rule_score * 0.6 + $json.ai_score * 0.4) >= 80 ? 'HOT' : Math.round($json.rule_score * 0.6 + $json.ai_score * 0.4) >= 50 ? 'WARM' : 'COLD' }}",
+              "value": "={{ ($json.ai_ok ? Math.round($json.rule_score * $('Config').first().json.rule_weight + $json.ai_score * $('Config').first().json.ai_weight) : $json.rule_score) >= $('Config').first().json.hot_threshold ? 'HOT' : ($json.ai_ok ? Math.round($json.rule_score * $('Config').first().json.rule_weight + $json.ai_score * $('Config').first().json.ai_weight) : $json.rule_score) >= $('Config').first().json.warm_threshold ? 'WARM' : 'COLD' }}",
               "type": "string"
             },
             {
-              "id": "x3",
+              "id": "a1b31945-a75c-43dd-b0f3-0af38fc786cd",
+              "name": "scoring_mode",
+              "value": "={{ $json.ai_ok ? 'AI + rules' : 'Rules only (AI unavailable)' }}",
+              "type": "string"
+            },
+            {
+              "id": "f9b28e0c-dd95-495d-b44b-5dc0a4a52056",
               "name": "reason",
               "value": "={{ $json.ai_reason }}",
               "type": "string"
             },
             {
-              "id": "x4",
+              "id": "e8608e03-23a3-45dc-a30e-fec106c57d6f",
               "name": "priority",
               "value": "={{ $json.ai_priority }}",
               "type": "string"
             },
             {
-              "id": "x5",
+              "id": "01aab368-60fe-47b1-8d3b-7d5bc35291dd",
               "name": "recommended_action",
               "value": "={{ $json.ai_action }}",
               "type": "string"
             }
           ]
         },
-        "options": {}
+        "options": {},
+        "includeOtherFields": true
       },
-      "id": "49b11471-eb4e-4b4f-9b9c-81b1684b46c8",
       "name": "Final Score",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1744,
-        1888
-      ]
+        2400,
+        300
+      ],
+      "id": "e2d10271-020e-4faa-bbbc-5b01c1d3da62"
     },
     {
       "parameters": {
@@ -639,12 +765,12 @@
                 },
                 "conditions": [
                   {
-                    "id": "s1",
-                    "leftValue": "={{ $json.final_score }}",
-                    "rightValue": 80,
+                    "id": "6039fbe3-6166-4000-95c9-b761c8c21c1e",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "HOT",
                     "operator": {
-                      "type": "number",
-                      "operation": "gte"
+                      "type": "string",
+                      "operation": "equals"
                     }
                   }
                 ],
@@ -663,12 +789,12 @@
                 },
                 "conditions": [
                   {
-                    "id": "s2",
-                    "leftValue": "={{ $json.final_score }}",
-                    "rightValue": 50,
+                    "id": "51707fa2-e7eb-4650-a0b8-aa7ef790b30e",
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "WARM",
                     "operator": {
-                      "type": "number",
-                      "operation": "gte"
+                      "type": "string",
+                      "operation": "equals"
                     }
                   }
                 ],
@@ -684,48 +810,68 @@
           "renameFallbackOutput": "COLD"
         }
       },
-      "id": "9b4da7fd-5242-4dd3-9995-03f325f33c5e",
       "name": "Classify",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        1968,
-        1888
-      ]
+        2640,
+        300
+      ],
+      "id": "e80280f1-c87c-4406-a05f-8acb505a2f68"
     },
     {
       "parameters": {
-        "operation": "append",
         "documentId": {
           "__rl": true,
           "value": "YOUR_GOOGLE_SHEET_ID",
-          "mode": "list",
-          "cachedResultName": "CRM",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+          "mode": "id"
         },
         "sheetName": {
           "__rl": true,
-          "value": 713656283,
-          "mode": "list",
-          "cachedResultName": "CRM",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=713656283"
+          "value": "CRM",
+          "mode": "name"
         },
+        "operation": "append",
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "lead_id": "={{ $('Hybrid Score').item.json.lead_id }}",
-            "name": "={{ $('Hybrid Score').item.json.name }}",
-            "email": "={{ $('Hybrid Score').item.json.email }}",
-            "phone": "={{ $('Hybrid Score').item.json.phone }}",
-            "company": "={{ $('Hybrid Score').item.json.company }}",
-            "budget": "={{ $('Hybrid Score').item.json.budget }}",
-            "service": "={{ $('Hybrid Score').item.json.service }}"
+            "lead_id": "={{ $json.lead_id }}",
+            "created_at": "={{ $json.created_at }}",
+            "name": "={{ $json.name }}",
+            "email": "={{ $json.email }}",
+            "phone": "={{ $json.phone }}",
+            "company": "={{ $json.company }}",
+            "industry": "={{ $json.industry }}",
+            "employees": "={{ $json.employees }}",
+            "budget": "={{ $json.budget }}",
+            "service": "={{ $json.service }}",
+            "message": "={{ $json.message }}",
+            "category": "={{ $json.category }}",
+            "priority": "={{ $json.priority }}",
+            "reason": "={{ $json.reason }}",
+            "recommended_action": "={{ $json.recommended_action }}",
+            "rule_score": "={{ $json.rule_score }}",
+            "ai_score": "={{ $json.ai_score }}",
+            "scoring_mode": "={{ $json.scoring_mode }}",
+            "status": "={{ $json.status }}",
+            "source": "={{ $json.source }}",
+            "followup_count": "={{ $json.followup_count }}",
+            "score": "={{ $json.final_score }}"
           },
           "matchingColumns": [],
           "schema": [
             {
               "id": "lead_id",
               "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -823,6 +969,42 @@
               "canBeUsedToMatch": true
             },
             {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reason",
+              "displayName": "reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommended_action",
+              "displayName": "recommended_action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
               "id": "rule_score",
               "displayName": "rule_score",
               "required": false,
@@ -841,26 +1023,17 @@
               "canBeUsedToMatch": true
             },
             {
+              "id": "scoring_mode",
+              "displayName": "scoring_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
               "id": "status",
               "displayName": "status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "reason",
-              "displayName": "reason",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "priority",
-              "displayName": "priority",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -877,8 +1050,8 @@
               "canBeUsedToMatch": true
             },
             {
-              "id": "created_at",
-              "displayName": "created_at",
+              "id": "followup_count",
+              "displayName": "followup_count",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -902,80 +1075,89 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true
-            },
-            {
-              "id": "followup_count",
-              "displayName": "followup_count",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
             }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+          ]
         },
         "options": {}
       },
-      "id": "986573e2-0d06-4efe-9df1-f48e744a680d",
       "name": "Save to CRM",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
-        2192,
-        1888
+        2880,
+        360
       ],
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "MUW0OdsUixXmEWc1",
-          "name": "Google Sheets account"
-        }
-      }
+      "id": "0726b965-13d8-4fa5-84a7-a97a80d09e90"
     },
     {
       "parameters": {
-        "sendTo": "={{ $json.email }}",
-        "subject": "=Thank you for your interest, {{ $json.name }}",
+        "sendTo": "={{ $('Final Score').first().json.email }}",
+        "subject": "=Thanks for reaching out, {{ $('Final Score').first().json.name }}",
         "emailType": "text",
-        "message": "=Hello {{ $json.name }}\nThank you for contacting us.\n\nWe received your request regarding for\nOur team will review your requirements and contact you shortly.\n\nBest regards,\nSales Team",
-        "options": {}
+        "message": "=Hello {{ $('Final Score').first().json.name }},\n\nThank you for contacting {{ $('Config').first().json.company_name }}. We received your request about {{ $('Final Score').first().json.service || 'our services' }}, and our team will get back to you shortly.\n\nBest regards,\n{{ $('Config').first().json.company_name }} Team",
+        "options": {
+          "appendAttribution": false
+        }
       },
-      "id": "8c29aa6d-2b57-4706-8c51-e9f92a1f2687",
-      "name": "Send Welcome Email",
+      "name": "Send Confirmation Email",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        2416,
-        1888
+        3120,
+        360
       ],
-      "webhookId": "31446123-a6bc-4512-ba71-3583ca03a59c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "RqGNOUpgg5iC9vQA",
-          "name": "Gmail account"
-        }
-      }
+      "id": "53cfa8bf-c042-4bf9-a05b-82bc8ac08589",
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={ \"status\": \"received\" }",
+        "responseBody": "={\n  \"status\": \"received\",\n  \"lead_id\": \"{{ $('Final Score').first().json.lead_id }}\"\n}",
         "options": {}
       },
-      "id": "bd8374af-d2f7-4031-b8d4-ca5b7adc62c5",
-      "name": "Respond to Webhook",
+      "name": "Respond: Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        2640,
-        1888
-      ]
+        3360,
+        360
+      ],
+      "id": "80e61324-1be0-4a90-8422-850ed6f52f83"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Config').first().json.team_email }}",
+        "subject": "=HOT lead: {{ $json.company || $json.name }} ({{ $json.final_score }}/100)",
+        "emailType": "text",
+        "message": "=A new HOT lead just came in.\n\nName: {{ $json.name }}\nEmail: {{ $json.email }}\nPhone: {{ $json.phone }}\nCompany: {{ $json.company }} ({{ $json.industry }}, {{ $json.employees }} employees)\nBudget: {{ $json.budget }}\nService: {{ $json.service }}\n\nScore: {{ $json.final_score }}/100 ({{ $json.scoring_mode }})\nWhy: {{ $json.reason }}\nSuggested next step: {{ $json.recommended_action }}\n\nLead ID: {{ $json.lead_id }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Alert Team (HOT)",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2880,
+        100
+      ],
+      "id": "0d284c1f-a385-4f7d-aa0e-1c4b0b07721b",
+      "onError": "continueRegularOutput"
     }
   ],
-  "pinData": {},
   "connections": {
     "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
       "main": [
         [
           {
@@ -1015,6 +1197,17 @@
         ]
       ]
     },
+    "Reject Invalid": {
+      "main": [
+        [
+          {
+            "node": "Respond: Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Duplicate Check": {
       "main": [
         [
@@ -1044,6 +1237,17 @@
         ]
       ]
     },
+    "Skip Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Respond: Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Generate Lead ID": {
       "main": [
         [
@@ -1056,6 +1260,17 @@
       ]
     },
     "AI Scoring (Gemini)": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
       "main": [
         [
           {
@@ -1092,6 +1307,11 @@
       "main": [
         [
           {
+            "node": "Alert Team (HOT)",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "Save to CRM",
             "type": "main",
             "index": 0
@@ -1117,18 +1337,18 @@
       "main": [
         [
           {
-            "node": "Send Welcome Email",
+            "node": "Send Confirmation Email",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send Welcome Email": {
+    "Send Confirmation Email": {
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Respond: Success",
             "type": "main",
             "index": 0
           }
@@ -1136,17 +1356,12 @@
       ]
     }
   },
-  "active": false,
   "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate"
+    "executionOrder": "v1"
   },
-  "versionId": "8402be25-a314-45b2-aafa-53c71ccd898e",
+  "pinData": {},
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "7cb4c493d61520b02dadb775069ff1a7851f920223e835f3e51f2d42d1086034"
+    "templateCredsSetupCompleted": false
   },
-  "nodeGroups": [],
-  "id": "XTmewexTzgFRczk9",
   "tags": []
 }

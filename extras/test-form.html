@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead Scoring Test Form</title>
+<style>
+  :root { --bg: #f5f7fb; --card: #fff; --text: #111827; --muted: #6b7280; --line: #e5e7eb; --accent: #0f766e; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0b1220; --card: #111a2e; --text: #f3f4f6; --muted: #9ca3af; --line: #253049; --accent: #2dd4bf; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 640px; margin: 32px auto; padding: 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p { margin: 0 0 16px; color: var(--muted); }
+  label { display: block; font-weight: 600; font-size: 13px; margin: 12px 0 4px; }
+  input, textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: inherit; font: inherit; }
+  textarea { min-height: 70px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .samples { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
+  button { border: 1px solid var(--line); background: transparent; color: inherit; border-radius: 999px; padding: 6px 14px; font: inherit; cursor: pointer; }
+  button.send { margin-top: 18px; width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 11px; font-weight: 700; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 10px; }
+  @media (max-width: 520px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <h1>Lead Scoring Test Form</h1>
+    <p>Sends one test lead to your n8n webhook. The reply opens in a new tab.</p>
+
+    <label for="url">Webhook URL (production)</label>
+    <input id="url" placeholder="https://your-n8n.example.com/webhook/lead-scoring" required>
+
+    <label>Quick samples</label>
+    <div class="samples">
+      <button type="button" data-sample="hot">HOT sample</button>
+      <button type="button" data-sample="warm">WARM sample</button>
+      <button type="button" data-sample="cold">COLD sample</button>
+      <button type="button" data-sample="invalid">Invalid email</button>
+    </div>
+
+    <form id="lead" method="POST" target="_blank">
+      <div class="row">
+        <div><label for="name">Name</label><input id="name" name="name"></div>
+        <div><label for="email">Email</label><input id="email" name="email"></div>
+      </div>
+      <div class="row">
+        <div><label for="company">Company</label><input id="company" name="company"></div>
+        <div><label for="industry">Industry</label><input id="industry" name="industry"></div>
+      </div>
+      <div class="row">
+        <div><label for="employees">Employees</label><input id="employees" name="employees"></div>
+        <div><label for="budget">Budget</label><input id="budget" name="budget"></div>
+      </div>
+      <label for="service">Service needed</label><input id="service" name="service">
+      <label for="message">Message</label><textarea id="message" name="message"></textarea>
+      <button class="send" type="submit">Send test lead</button>
+      <div class="hint">Sending the same email twice should return "duplicate".</div>
+    </form>
+  </div>
+</main>
+<script>
+  const samples = {
+    hot: { name: 'Sara Test', email: 'sara.test@example.com', company: 'Lumen Bay Marketing', industry: 'Marketing',
+           employees: '120', budget: '$6,000', service: 'Lead automation', message: 'We are ready to start this month.' },
+    warm: { name: 'Omar Test', email: 'omar.test@example.com', company: 'Pixelforge Agency', industry: 'Agency',
+            employees: '30', budget: '1,500', service: 'CRM setup', message: 'We need help to automate our follow ups.' },
+    cold: { name: 'Lina Test', email: 'lina.test@example.com', company: 'Granite Peak', industry: 'Consulting',
+            employees: '3', budget: '200', service: 'Information', message: 'Just exploring options for now.' },
+    invalid: { name: 'Bad Email', email: 'not-an-email', company: '', industry: '', employees: '', budget: '', service: '', message: '' },
+  };
+  document.querySelectorAll('[data-sample]').forEach((b) => b.addEventListener('click', () => {
+    const s = samples[b.dataset.sample];
+    Object.entries(s).forEach(([k, v]) => { document.getElementById(k).value = v; });
+  }));
+  const url = document.getElementById('url');
+  try { url.value = localStorage.getItem('leadTestUrl') || ''; } catch (e) { /* storage unavailable */ }
+  document.getElementById('lead').addEventListener('submit', (e) => {
+    if (!url.value.trim()) { e.preventDefault(); url.focus(); return; }
+    try { localStorage.setItem('leadTestUrl', url.value.trim()); } catch (err) { /* ignore */ }
+    e.target.action = url.value.trim();
+  });
+</script>
+</body>
+</html>

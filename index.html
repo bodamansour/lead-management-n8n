@@ -148,6 +148,7 @@
   }
   .readme pre { overflow-x: auto; padding: 16px; border-radius: 10px; background: var(--panel); }
   .readme pre code { padding: 0; background: none; }
+  .readme img { display: block; max-width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--rule); }
   .readme blockquote { margin: 1.2em 0; padding: 2px 16px; border-inline-start: 4px solid var(--line); color: var(--muted); }
   .table-wrap { overflow-x: auto; margin: 1.2em 0; }
   .readme table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
@@ -283,7 +284,10 @@ const OPS = {
   equals: '=', notEquals: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤',
   contains: 'contains', notContains: 'does not contain', startsWith: 'starts with', endsWith: 'ends with',
   notEmpty: 'is set', empty: 'is empty', exists: 'exists', notExists: 'does not exist', true: 'is true', false: 'is false',
+  regex: 'has a valid format', notRegex: 'does not match the expected format',
 };
+// Patterns are shown in plain words, not as raw regular expressions.
+const NO_RHS = new Set(['regex', 'notRegex']);
 function field(expr) {
   const s = String(expr == null ? '' : expr);
   const m = s.match(/\$json(?:\.([\w$]+)|\[['"]([^'"]+)['"]\])/);
@@ -291,7 +295,7 @@ function field(expr) {
 }
 function condText(c) {
   const op = c.operator || {};
-  const rhs = op.singleValue ? '' : ' ' + String(c.rightValue == null ? '' : c.rightValue).replace(/^=/, '');
+  const rhs = op.singleValue || NO_RHS.has(op.operation) ? '' : ' ' + String(c.rightValue == null ? '' : c.rightValue).replace(/^=/, '');
   return (field(c.leftValue) + ' ' + (OPS[op.operation] || op.operation || '') + rhs).trim();
 }
 function condsText(block) {

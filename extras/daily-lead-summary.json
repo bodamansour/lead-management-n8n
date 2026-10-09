@@ -1,0 +1,123 @@
+{
+  "name": "Lead Scoring - Daily Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "name": "Every Morning",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5635ed53-5f13-4c27-bd5d-10c97be10a90"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CRM",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "name": "Read CRM",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        0
+      ],
+      "id": "50d12ea1-baa8-4b0f-a191-f3092539ec04",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Builds one email from all CRM rows: new leads in the last 24 hours,\n// the HOT ones among them, and follow-ups that are due today or overdue.\nconst rows = $input.all().map((i) => i.json).filter((r) => r.lead_id);\nconst now = new Date();\nconst dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);\nconst today = now.toISOString().slice(0, 10);\n\nconst fresh = rows.filter((r) => {\n  const t = new Date(r.created_at);\n  return !isNaN(t) && t >= dayAgo;\n});\nconst count = (c) => fresh.filter((r) => String(r.category).toUpperCase() === c).length;\nconst hot = fresh.filter((r) => String(r.category).toUpperCase() === 'HOT');\nconst due = rows.filter((r) => r.next_followup\n  && String(r.next_followup).slice(0, 10) <= today\n  && String(r.status).toUpperCase() !== 'CLOSED');\n\nconst line = (r) => `- ${r.name || 'Unknown'} (${r.company || 'no company'}) | score ${r.score} | ${r.recommended_action || ''}`;\nconst body = [\n  `New leads in the last 24 hours: ${fresh.length}`,\n  `HOT: ${count('HOT')} | WARM: ${count('WARM')} | COLD: ${count('COLD')}`,\n  '',\n  'HOT leads:',\n  hot.length ? hot.map(line).join('\\n') : '- None',\n  '',\n  'Follow-ups due:',\n  due.length\n    ? due.map((r) => `- ${r.name || 'Unknown'} (${r.company || ''}) | due ${String(r.next_followup).slice(0, 10)}`).join('\\n')\n    : '- None',\n].join('\\n');\n\nreturn [{ json: { subject: `Daily lead summary: ${fresh.length} new, ${count('HOT')} HOT`, body } }];\n"
+      },
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "556541ed-1e83-478b-b9d2-b92f3cbbf50b"
+    },
+    {
+      "parameters": {
+        "sendTo": "team@example.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.body }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Send Summary",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        0
+      ],
+      "id": "a81b0f7b-1597-45f6-93b9-494f21e6c265"
+    }
+  ],
+  "connections": {
+    "Every Morning": {
+      "main": [
+        [
+          {
+            "node": "Read CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CRM": {
+      "main": [
+        [
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Send Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}
