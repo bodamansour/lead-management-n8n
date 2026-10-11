@@ -20,7 +20,10 @@ team about HOT leads.
   normal HTML form) and rejects missing names or invalid emails with HTTP 400.
 - **Duplicate detection**: looks up the lead's email in the sheet and replies
   `duplicate` instead of saving it twice.
-- **Lead ID**: gives every new lead a traceable ID like `LEAD-1791518069546`.
+- **Lead ID**: gives every new lead a unique, traceable ID like
+  `LEAD-1791518069546-482`: the time it arrived plus the n8n execution number,
+  so two leads in the same millisecond never share an ID, and you can open the
+  matching execution in n8n.
 - **AI scoring**: Google Gemini returns a score, a reason, a priority, and a
   recommended next step. Names, emails, and phone numbers are not sent to the AI.
 - **Hybrid score**: 60% business rules (budget, company size, message intent)
@@ -69,6 +72,8 @@ Webhook (new lead)
 | `extras/error-alert.json` | Emails you if a workflow fails |
 | `extras/daily-lead-summary.json` | Daily email: new leads, HOT leads, follow-ups due |
 | `extras/test-form.html` | A small form for sending test leads |
+| `tests/workflow.test.mjs` | Checks the scoring and summary logic in the JSON files |
+| `index.html` | Project page at [lead-management-n8n.vercel.app](https://lead-management-n8n.vercel.app), built from this README and the workflow |
 
 ## Setup
 
@@ -89,7 +94,8 @@ Webhook (new lead)
    **Webhook** node (it ends with `/webhook/lead-scoring`).
 7. **Optional extras**: import `extras/error-alert.json` and set it as the
    main workflow's error workflow; import `extras/daily-lead-summary.json` for
-   a 9:00 daily summary.
+   a 9:00 daily summary. The time follows your n8n instance's timezone
+   (`GENERIC_TIMEZONE`, or the workflow's own timezone setting).
 
 ## Test it
 
@@ -106,14 +112,29 @@ the sheet. Required fields are `name` and `email`; `phone`, `company`,
 `industry`, `employees`, `budget`, `service`, `message`, and `source` are
 optional. Values like `$5,000` work for budget and employees.
 
+## Check the logic
+
+The repo includes tests that read the scoring rules, thresholds, the
+**Parse AI Response** code and the daily summary code straight from the
+workflow files and check them against this README, without running n8n:
+
+```bash
+node --test tests/*.test.mjs   # Node.js 21 or newer
+```
+
+They also check that every connection points to an existing node and that
+`crm-columns.csv` has every column **Save to CRM** writes. Run them after you
+edit the workflow and re-export it.
+
 ## Scoring rules
 
 The rule score is out of 80 and scaled to 100:
 
 - **Budget**: 5,000+ = 30, 2,000+ = 25, 500+ = 15, less = 5
 - **Company size**: over 200 = 20, 51+ = 15, 11+ = 10, less = 5
-- **Message intent**: buy / start / now / ready / asap = 30;
-  need / want / implement / automate = 20; interested = 10; other = 5
+- **Message intent** (whole words): buy / start / now / immediately / ready /
+  asap = 30; need / want / implement / automate (or automation) = 20;
+  interested = 10; other = 5
 
 Final score = 60% rules + 40% AI. HOT is 80 or more, WARM is 50 or more, and
 everything else is COLD. You can change the weights and thresholds in **Config**.
@@ -132,3 +153,7 @@ everything else is COLD. You can change the weights and thresholds in **Config**
 - Google Sheets works well for small teams; a dedicated CRM (HubSpot,
   Airtable) would scale better for high lead volume.
 - The AI helps prioritize. A person should make the final decision on each lead.
+
+## License
+
+[MIT](LICENSE)

@@ -426,7 +426,7 @@
             {
               "id": "e8a3d327-a081-4e02-bdda-46ee2261e5f1",
               "name": "lead_id",
-              "value": "={{ 'LEAD-' + $now.toMillis() }}",
+              "value": "={{ 'LEAD-' + $now.toMillis() + '-' + $execution.id }}",
               "type": "string"
             },
             {
