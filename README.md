@@ -95,7 +95,10 @@ Webhook (new lead)
 7. **Optional extras**: import `extras/error-alert.json` and set it as the
    main workflow's error workflow; import `extras/daily-lead-summary.json` for
    a 9:00 daily summary. The time follows your n8n instance's timezone
-   (`GENERIC_TIMEZONE`, or the workflow's own timezone setting).
+   (`GENERIC_TIMEZONE`, or the workflow's own timezone setting). In both,
+   connect your Gmail credential and replace `team@example.com` in the send
+   node with your address; in the daily summary, also put your sheet ID in
+   **Read CRM**.
 
 ## Test it
 
@@ -122,8 +125,10 @@ workflow files and check them against this README, without running n8n:
 node --test tests/*.test.mjs   # Node.js 21 or newer
 ```
 
-They also check that every connection points to an existing node and that
-`crm-columns.csv` has every column **Save to CRM** writes. Run them after you
+They also check that every connection points to an existing node, that
+`crm-columns.csv` has every column **Save to CRM** writes, that text from the
+form can't be read as a spreadsheet formula, and that the workflow files hold
+no credentials, instance IDs, or real email addresses and phone numbers. Run them after you
 edit the workflow and re-export it.
 
 ## Scoring rules
@@ -143,6 +148,11 @@ everything else is COLD. You can change the weights and thresholds in **Config**
 
 - Names, emails, and phone numbers stay out of the AI prompt. The company
   details and the lead's message are sent to Gemini.
+- **Save to CRM** writes with Google Sheets formatting, so any text field that
+  starts with `=`, `+`, `-`, or `@` (a phone number like `+20 100 …`, or a
+  form entry like `=IMPORTDATA(…)`) is saved with a leading apostrophe. Sheets
+  then keeps it as plain text instead of running it as a formula; the
+  apostrophe isn't shown in the cell.
 - Use a billed Gemini API key for real leads. Google's Gemini API terms say
   free-tier content may be used to improve Google products, while paid usage
   isn't.
