@@ -143,3 +143,48 @@ test('daily summary counts the last 24 hours and lists due follow-ups', () => {
   assert.match(out.json.body, /- C \(\) \| due 2000-01-01/);
   assert.doesNotMatch(out.json.body, /- D /);
 });
+
+test('Parse AI Response does not read a missing or empty score as 0', () => {
+  // Number(null), Number('') and Number(false) are all 0, which used to count as a
+  // real AI score and pull a HOT lead down to WARM.
+  for (const score of ['null', '""', 'false', 'true', '[]']) {
+    const parsed = parseAiResponse(geminiReply(`{"score": ${score}, "reason": "?"}`));
+    assert.equal(parsed.ai_ok, false, `score ${score}`);
+    assert.equal(parsed.ai_score, null, `score ${score}`);
+  }
+  assert.equal(parseAiResponse(geminiReply('{"score": "85"}')).ai_score, 85);
+});
+
+test('Save to CRM writes text that starts with = + - @ as plain text, not a formula', () => {
+  // The sheet is written with "Let Google Sheets format" (USER_ENTERED), so a value
+  // like "+20 100 123 4567" or "=IMPORTDATA(...)" would be read as a formula.
+  // A leading apostrophe makes Sheets keep it as text (the apostrophe isn't shown).
+  const mapping = node('Save to CRM').parameters.columns.value;
+  const write = (field, value) => evaluate(mapping[field], { json: { [field]: value } });
+
+  assert.equal(write('phone', '+20 100 123 4567'), "'+20 100 123 4567");
+  assert.equal(write('name', '=IMPORTDATA("https://example.com")'), `'=IMPORTDATA("https://example.com")`);
+  assert.equal(write('message', '- we need a CRM'), "'- we need a CRM");
+  assert.equal(write('company', '@acme'), "'@acme");
+  assert.equal(write('name', 'Sara Ali'), 'Sara Ali');
+  assert.equal(write('phone', ''), '');
+
+  for (const field of ['name', 'email', 'phone', 'company', 'industry', 'service', 'message', 'source', 'reason', 'recommended_action']) {
+    assert.equal(write(field, '=1+1'), "'=1+1", `${field} is not protected`);
+  }
+});
+
+test('workflow files contain no credentials, instance IDs or real contact details', () => {
+  const files = ['../lead management.json', '../extras/daily-lead-summary.json', '../extras/error-alert.json'];
+  for (const file of files) {
+    const text = readFileSync(new URL(file, import.meta.url), 'utf8');
+    const flow = JSON.parse(text);
+    assert.equal(flow.meta?.instanceId, undefined, `${file}: meta.instanceId`);
+    for (const n of flow.nodes) assert.equal(n.credentials, undefined, `${file}: credentials on ${n.name}`);
+    for (const email of text.match(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g) || []) {
+      assert.match(email, /@example\.com$/, `${file}: real email address ${email}`);
+    }
+    // Phone numbers: 10+ digits, optionally with a leading + and spaces (UUIDs use dashes).
+    assert.doesNotMatch(text, /\+?\b\d[\d ]{9,}\d\b/, `${file}: looks like a phone number`);
+  }
+});

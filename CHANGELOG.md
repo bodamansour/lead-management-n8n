@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- **Save to CRM**: text fields that start with `=`, `+`, `-`, or `@` are saved
+  as plain text. Before, Google Sheets read them as formulas, so a phone number
+  like `+20 100 123 4567` showed `#ERROR!` (or lost its `+`), and anyone using
+  the public form could put a working formula into the CRM.
+- **Parse AI Response**: a missing or empty AI score (`null`, `""`, `false`) no
+  longer counts as a score of 0. The lead is scored with the rules only, as
+  when the AI fails.
+
+### Added
+- Tests for both fixes, and a test that the workflow files hold no credentials,
+  instance IDs, or real contact details.
+
 ## v2 (October 2026)
 
 Improves the internship capstone version (v1, August 2026).

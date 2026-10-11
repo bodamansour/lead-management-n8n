@@ -549,7 +549,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Reads Gemini's answer safely.\n// If the AI call failed or returned something unreadable, ai_ok is false\n// and the lead is scored with the business rules only (see Final Score).\nconst res = $input.item.json;\nlet ai = null;\ntry {\n  const text = res.candidates[0].content.parts[0].text;\n  ai = JSON.parse(String(text).replace(/^```(?:json)?\\s*|\\s*```$/g, ''));\n} catch (e) {\n  ai = null;\n}\nconst score = Number(ai && ai.score);\nconst ok = ai !== null && Number.isFinite(score);\n\nreturn {\n  json: {\n    ai_ok: ok,\n    ai_score: ok ? Math.max(0, Math.min(100, Math.round(score))) : null,\n    ai_reason: ok ? String(ai.reason || '') : 'AI unavailable, scored with business rules only',\n    ai_priority: ok ? String(ai.priority || 'NORMAL').toUpperCase() : 'NORMAL',\n    ai_action: ok ? String(ai.recommended_action || '') : 'Review this lead manually',\n  },\n};\n"
+        "jsCode": "// Reads Gemini's answer safely.\n// If the AI call failed or returned something unreadable, ai_ok is false\n// and the lead is scored with the business rules only (see Final Score).\nconst res = $input.item.json;\nlet ai = null;\ntry {\n  const text = res.candidates[0].content.parts[0].text;\n  ai = JSON.parse(String(text).replace(/^```(?:json)?\\s*|\\s*```$/g, ''));\n} catch (e) {\n  ai = null;\n}\n// Only a number or a numeric string counts: Number(null), Number('') and\n// Number(false) are 0, which would look like a real (very low) AI score.\nconst raw = ai && ai.score;\nconst score = typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '') ? Number(raw) : NaN;\nconst ok = ai !== null && Number.isFinite(score);\n\nreturn {\n  json: {\n    ai_ok: ok,\n    ai_score: ok ? Math.max(0, Math.min(100, Math.round(score))) : null,\n    ai_reason: ok ? String(ai.reason || '') : 'AI unavailable, scored with business rules only',\n    ai_priority: ok ? String(ai.priority || 'NORMAL').toUpperCase() : 'NORMAL',\n    ai_action: ok ? String(ai.recommended_action || '') : 'Review this lead manually',\n  },\n};\n"
       },
       "name": "Parse AI Response",
       "type": "n8n-nodes-base.code",
@@ -837,24 +837,24 @@
           "value": {
             "lead_id": "={{ $json.lead_id }}",
             "created_at": "={{ $json.created_at }}",
-            "name": "={{ $json.name }}",
-            "email": "={{ $json.email }}",
-            "phone": "={{ $json.phone }}",
-            "company": "={{ $json.company }}",
-            "industry": "={{ $json.industry }}",
+            "name": "={{ String($json.name ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
+            "email": "={{ String($json.email ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
+            "phone": "={{ String($json.phone ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
+            "company": "={{ String($json.company ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
+            "industry": "={{ String($json.industry ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
             "employees": "={{ $json.employees }}",
             "budget": "={{ $json.budget }}",
-            "service": "={{ $json.service }}",
-            "message": "={{ $json.message }}",
+            "service": "={{ String($json.service ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
+            "message": "={{ String($json.message ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
             "category": "={{ $json.category }}",
             "priority": "={{ $json.priority }}",
-            "reason": "={{ $json.reason }}",
-            "recommended_action": "={{ $json.recommended_action }}",
+            "reason": "={{ String($json.reason ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
+            "recommended_action": "={{ String($json.recommended_action ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
             "rule_score": "={{ $json.rule_score }}",
             "ai_score": "={{ $json.ai_score }}",
             "scoring_mode": "={{ $json.scoring_mode }}",
             "status": "={{ $json.status }}",
-            "source": "={{ $json.source }}",
+            "source": "={{ String($json.source ?? '').replace(/^[=+\\-@]/, \"'$&\") }}",
             "followup_count": "={{ $json.followup_count }}",
             "score": "={{ $json.final_score }}"
           },
