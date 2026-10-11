@@ -20,7 +20,10 @@ team about HOT leads.
   normal HTML form) and rejects missing names or invalid emails with HTTP 400.
 - **Duplicate detection**: looks up the lead's email in the sheet and replies
   `duplicate` instead of saving it twice.
-- **Lead ID**: gives every new lead a traceable ID like `LEAD-1791518069546`.
+- **Lead ID**: gives every new lead a unique, traceable ID like
+  `LEAD-1791518069546-482`: the time it arrived plus the n8n execution number,
+  so two leads in the same millisecond never share an ID, and you can open the
+  matching execution in n8n.
 - **AI scoring**: Google Gemini returns a score, a reason, a priority, and a
   recommended next step. Names, emails, and phone numbers are not sent to the AI.
 - **Hybrid score**: 60% business rules (budget, company size, message intent)
@@ -150,3 +153,7 @@ everything else is COLD. You can change the weights and thresholds in **Config**
 - Google Sheets works well for small teams; a dedicated CRM (HubSpot,
   Airtable) would scale better for high lead volume.
 - The AI helps prioritize. A person should make the final decision on each lead.
+
+## License
+
+[MIT](LICENSE)

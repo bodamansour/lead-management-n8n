@@ -18,10 +18,12 @@ const config = Object.fromEntries(
 );
 
 /** Evaluates an n8n "={{ ... }}" expression. `nodes` maps node names to their first item's json. */
-function evaluate(expression, { json = {}, nodes = {} } = {}) {
+function evaluate(expression, { json = {}, nodes = {}, now = Date.now(), executionId = '1' } = {}) {
   const body = expression.replace(/^=\{\{\s*/, '').replace(/\s*\}\}$/, '');
   const $ = (name) => ({ first: () => ({ json: nodes[name] }) });
-  return new Function('$json', '$', `return (${body});`)(json, $);
+  const $now = { toMillis: () => now, toISO: () => new Date(now).toISOString() };
+  const $execution = { id: executionId };
+  return new Function('$json', '$', '$now', '$execution', `return (${body});`)(json, $, $now, $execution);
 }
 
 function ruleScore(lead) {
@@ -42,6 +44,15 @@ function parseAiResponse(response) {
 }
 
 const geminiReply = (text) => ({ candidates: [{ content: { parts: [{ text }] } }] });
+
+test('two leads in the same millisecond get different IDs', () => {
+  const expression = assignment('Generate Lead ID', 'lead_id');
+  const now = 1791518069546;
+  const first = evaluate(expression, { now, executionId: '481' });
+  const second = evaluate(expression, { now, executionId: '482' });
+  assert.match(first, /^LEAD-1791518069546-481$/);
+  assert.notEqual(first, second);
+});
 
 test('the strongest lead gets the maximum rule score', () => {
   assert.equal(ruleScore({ budget: 5000, employees: 201, message: 'Ready to start now' }), 100);
